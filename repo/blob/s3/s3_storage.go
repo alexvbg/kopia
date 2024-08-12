@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"golang.org/x/net/http2"
 	"io"
 	"net/http"
 	"strings"
@@ -300,10 +301,10 @@ func (s *s3Storage) DisplayName() string {
 	return fmt.Sprintf("S3: %v %v", s.Endpoint, s.BucketName)
 }
 
-func getCustomTransport(opt *Options) (*http.Transport, error) {
+func getCustomTransport(opt *Options) (*http2.Transport, error) {
 	if opt.DoNotVerifyTLS {
 		//nolint:gosec
-		return &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, nil
+		return &http2.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, nil
 	}
 
 	transport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
@@ -318,7 +319,11 @@ func getCustomTransport(opt *Options) (*http.Transport, error) {
 		transport.TLSClientConfig.RootCAs = rootcas
 	}
 
-	return transport, nil
+	http2Transport, err := http2.ConfigureTransports(transport)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot configure http2 transport")
+	}
+	return http2Transport, nil
 }
 
 // New creates new S3-backed storage with specified options:
