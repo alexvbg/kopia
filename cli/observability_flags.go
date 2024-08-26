@@ -6,6 +6,7 @@ import (
 	"net/http/pprof"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -137,6 +138,10 @@ func (c *observabilityFlags) maybeStartListener(ctx context.Context) {
 
 	m := mux.NewRouter()
 	initPrometheus(m)
+
+	// Enable block and mutex profiles.
+	runtime.SetBlockProfileRate(1)
+	runtime.SetMutexProfileFraction(1)
 
 	if c.enablePProf {
 		m.HandleFunc("/debug/pprof/", pprof.Index)
