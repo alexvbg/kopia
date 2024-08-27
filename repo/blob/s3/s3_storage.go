@@ -307,6 +307,7 @@ func getCustomTransport(opt *Options) (*http.Transport, error) {
 	}
 
 	transport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
+	transport.MaxIdleConns = 0
 
 	if len(opt.RootCA) != 0 {
 		rootcas := x509.NewCertPool()
