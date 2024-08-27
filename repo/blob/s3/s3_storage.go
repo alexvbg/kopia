@@ -302,12 +302,16 @@ func (s *s3Storage) DisplayName() string {
 
 func getCustomTransport(opt *Options) (*http.Transport, error) {
 	if opt.DoNotVerifyTLS {
+		fmt.Println("http_idle_conn initialization, DoNotVerifyTLS")
 		//nolint:gosec
 		return &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, nil
 	}
 
+	fmt.Println("http_idle_conn initialization")
 	transport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
+	transport.MaxConnsPerHost = 0
 	transport.MaxIdleConns = 0
+	transport.MaxIdleConnsPerHost = 1000
 
 	if len(opt.RootCA) != 0 {
 		rootcas := x509.NewCertPool()
