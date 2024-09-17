@@ -302,6 +302,7 @@ func (s *s3Storage) DisplayName() string {
 
 func getCustomTransport(opt *Options) (*http.Transport, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
+	transport.MaxIdleConnsPerHost = 100
 	if opt.DoNotVerifyTLS {
 		//nolint:gosec
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
